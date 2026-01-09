@@ -1,0 +1,124 @@
+<!DOCTYPE html>
+<html lang="zh-TW">
+<head>
+    <meta charset="UTF-8">
+    <title>Windows XP System Recovery</title>
+    <style>
+        body, html { margin: 0; padding: 0; height: 100vh; background: black; overflow: hidden; font-family: 'Tahoma', sans-serif; color: white; }
+
+        /* XP 初始開機畫面 */
+        #boot-screen {
+            display: flex; flex-direction: column; justify-content: center; align-items: center;
+            height: 100%; width: 100%; background: black; text-align: left; padding: 50px; box-sizing: border-box;
+        }
+
+        /* 熊貓病毒視窗 */
+        #panda-box {
+            display: none; position: fixed; top: 50%; left: 50%; transform: translate(-50%, -50%);
+            background: #f0f0f0; color: #000; padding: 20px; border: 2px solid #000;
+            width: 400px; box-shadow: 10px 10px 0px red; z-index: 100; animation: shake 0.1s infinite;
+        }
+        @keyframes shake { 0% { transform: translate(-50%, -50%) rotate(0deg); } 50% { transform: translate(-51%, -49%) rotate(1deg); } 100% { transform: translate(-50%, -50%) rotate(0deg); } }
+
+        /* XP 藍屏 */
+        #bsod-screen {
+            display: none; position: fixed; top: 0; left: 0; width: 100vw; height: 100vh;
+            background-color: #0000AA; color: #fff; font-family: 'Lucida Console', monospace;
+            padding: 40px; box-sizing: border-box; z-index: 200; cursor: none;
+        }
+
+        /* 隱藏 YouTube 播放器 */
+        #youtube-player { position: absolute; width: 1px; height: 1px; opacity: 0; pointer-events: none; }
+
+        #exit-hint { position: fixed; bottom: 5px; right: 5px; font-size: 8px; color: rgba(255,255,255,0.1); z-index: 300; }
+    </style>
+</head>
+<body>
+
+    <div id="boot-screen">
+        <p>Microsoft(R) Windows XP(TM) (C) Copyright 1985-2001 Microsoft Corp.</p>
+        <p>正在啟動系統...</p>
+        <p>正在檢查磁碟機 C:\ 的完整性...</p>
+    </div>
+
+    <div id="panda-box">
+        <h3 style="color: red; margin-top: 0;">[!] 偵測到 Worm.WhBoy (熊貓燒香)</h3>
+        <p>正在覆蓋系統關鍵檔案...</p>
+        <div style="width: 100%; background: #ccc; height: 20px; border: 1px solid #000;">
+            <div id="progress-fill" style="width: 0%; background: #000; height: 100%;"></div>
+        </div>
+        <p>進度: <span id="percent">0</span>%</p>
+    </div>
+
+    <div id="bsod-screen">
+        <pre style="font-size: 1.2em;">
+A problem has been detected and windows has been shut down to prevent damage
+to your computer.
+
+UNMOUNTABLE_BOOT_VOLUME
+
+*** STOP: 0x000000ED (0x80F128D0, 0xc0000032, 0x00000000, 0x00000000)
+
+正在傾印實體記憶體: 100% 完成
+        </pre>
+    </div>
+
+    <iframe id="youtube-player" src="" frameborder="0" allow="autoplay"></iframe>
+
+    <div id="exit-hint">1</div>
+
+    <audio id="xp-boot-sound" src="https://www.winhistory.de/more/winstart/mp3/xp.mp3"></audio>
+
+    <script>
+        const bootScreen = document.getElementById('boot-screen');
+        const pandaBox = document.getElementById('panda-box');
+        const bsodScreen = document.getElementById('bsod-screen');
+        const youtubePlayer = document.getElementById('youtube-player');
+        const xpBootSound = document.getElementById('xp-boot-sound');
+        const fill = document.getElementById('progress-fill');
+        const percentEl = document.getElementById('percent');
+
+        // 1. 啟動 (需點擊一下畫面以繞過瀏覽器音效限制)
+        window.addEventListener('mousedown', () => {
+            if (bootScreen.style.display !== 'none') {
+                xpBootSound.play();
+                if (document.documentElement.requestFullscreen) document.documentElement.requestFullscreen();
+                
+                // 5秒後跳出熊貓病毒
+                setTimeout(() => {
+                    bootScreen.style.display = 'none';
+                    pandaBox.style.display = 'block';
+                    startPandaInfection();
+                }, 5000);
+            }
+        }, { once: true });
+
+        function startPandaInfection() {
+            let p = 0;
+            let timer = setInterval(() => {
+                p += Math.floor(Math.random() * 5);
+                if (p > 99) p = 99;
+                fill.style.width = p + "%";
+                percentEl.innerText = p;
+                if (p >= 99) {
+                    clearInterval(timer);
+                    setTimeout(() => {
+                        pandaBox.style.display = 'none';
+                        bsodScreen.style.display = 'block';
+                        // 啟動 YouTube 驚悚音樂
+                        youtubePlayer.src = "https://www.youtube.com/embed/rbuSBhzerzQ?autoplay=1&mute=0&controls=0&loop=1&playlist=rbuSBhzerzQ";
+                    }, 1500);
+                }
+            }, 300);
+        }
+
+        // 按 1 退出
+        window.addEventListener('keydown', (e) => {
+            if (e.key === '1') {
+                if (document.exitFullscreen) document.exitFullscreen();
+                location.reload();
+            }
+        });
+    </script>
+</body>
+</html>
